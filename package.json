@@ -8,6 +8,7 @@
     "publish-patch": "npm version patch && npm publish --access public && git push",
     "publish-minor": "npm version minor && npm publish --access public && git push",
     "publish-major": "npm version major && npm publish --access public && git push",
+    "playground": "node playground/main.mjs",
     "lint": "eslint . --ext .js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -37,6 +38,8 @@
     "eslint-plugin-promise": "^6.1.1"
   },
   "dependencies": {
+    "@prisma/client": "^4.11.0",
+    "decimal.js": "^10.4.3",
     "lodash": "^4.17.21"
   }
 }

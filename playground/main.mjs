@@ -3,7 +3,11 @@
 import InventoryModel from './models/inventory.model.mjs'
 
 try {
-  console.log(await InventoryModel.deleteById(114))
+  const inventory = await InventoryModel.getOne(8)
+
+  console.log(inventory.costPrice + 1)
+
+  // console.log(await InventoryModel.deleteById(114))
   //
   // const inventory = InventoryModel.create(
   //   {

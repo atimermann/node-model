@@ -18,6 +18,7 @@
  *    === Transaction with Prisma  ===
  *       https://www.prisma.io/docs/guides/performance-and-optimization/prisma-client-transactions-guide#interactive-transactions
  *
+ * // TODO: Criar opção para Habilitar Decimal do Prisma, quebra validação
  *
  */
 
@@ -25,15 +26,15 @@
  * @typedef {object} Options
  * @description Objeto de configuração
  *
- * @property {boolean} [nestTables=false] - Se valores devem ser aninhados
  * @property {boolean} [validate=true] - Indica se a validação deve ser feita ao criar a instância.
- * @property {boolean} [ignoreRequired=false] - Se true, ignora validação de campos obrigatório (útil para update parcial)
- * @property {boolean} [validateDeep=false] - Se true, Realiza validação profunda, ou seja das subinstancias relacionada
+ * @property {boolean} [ignoreRequired=false] - Se true, ignora validação de campo obrigatório (útil para update parcial)
+ * @property {boolean} [validateDeep=false] - Se true, Realiza validação profunda, ou seja, das subinstancias relacionada
  */
 
 import isObject from 'lodash/isObject.js'
 import cloneDeep from 'lodash/cloneDeep.js'
 import Ajv from 'ajv'
+import Decimal from 'decimal.js'
 
 export default class PrismaModel {
   /**
@@ -241,92 +242,6 @@ Create a base class by extending PrismaModel and define prismaClient like this:
   }
 
   /**
-   * returna __nestedConvertDict se definido ou então o define
-   *
-   * @returns {undefined}
-   */
-  static get nestedConvertionDict () {
-    if (!this._nestedConvertionDictCache) this._updateConvertionDict()
-    return this._nestedConvertionDictCache
-  }
-
-  static get flattenConvertionDict () {
-    if (!this._flattenConvertionDictCache) this._updateConvertionDict()
-    return this._flattenConvertionDictCache
-  }
-
-  static _updateConvertionDict () {
-    this._nestedConvertionDictCache = {}
-    this._flattenConvertionDictCache = {}
-
-    if (this.Service.relationMappings) {
-      for (const [relationMappingName, relationMapping] of Object.entries(this.Service.relationMappings)) {
-        // BelongsToOneRelation
-        if (relationMapping.relation === this.Service.BelongsToOneRelation) {
-          this._nestedConvertionDictCache[relationMapping.join.from] = relationMappingName
-          this._flattenConvertionDictCache[relationMappingName] = relationMapping.join.from.split('.')[1]
-        }
-      }
-    }
-  }
-
-  /**
-   * Converte resultado da consulta utilizando:
-   *        .options({ nestTables: true }) - Apenas para Mysql e
-   *  e relacionamentos com
-   *        joinRelated (devidamente mapeado no model)
-   *
-   * Formato de Saída do nestTables:
-   *     {
-   *        "inventory": {
-   *           "id": 2,
-   *           "cost_price": 103.23,
-   *           "purchase_date": "2023-01-30T03:00:00.000Z"
-   *        },
-   *        "product": {
-   *           "id": 1,
-   *           "name": "Teste5"
-   *        },
-   *        "product:product_category": {
-   *           "id": 8,
-   *           "name": "Placa mãe"
-   *        }
-   *   }
-   *
-   *   inventory é o model principal, e o restando são relacionamentos aninhados
-   *
-   *    Resultado final:
-   *
-   *    {
-   *       "id": 2,
-   *       "cost_price": 103.23,
-   *       "purchase_date": "2023-01-30T03:00:00.000Z",
-   *       "product": {
-   *          "id": 1,
-   *          "name": "Teste5",
-   *          "product_category": {
-   *             "id": 8,
-   *             "name": "Placa mãe"
-   *          }
-   *       }
-   *    }
-   *
-   *
-   * @param rowData {Object}  Resultado da query a ser corrido
-   *
-   * @returns {*}
-   */
-  static nestResultWithNestTables (rowData) {
-    if (!rowData) return undefined
-
-    const correctedNestedData = {
-      ...rowData[this.prismaModel]
-    }
-    this._mapNestResultWithNestTables(correctedNestedData, rowData, this.Service.relationMappings, '')
-    return correctedNestedData
-  }
-
-  /**
    * Retorna um objeto validator, criando um cache na primeira execução
    * @returns {import("ajv").ValidateFunction} - o objeto validator
    */
@@ -359,37 +274,6 @@ Create a base class by extending PrismaModel and define prismaClient like this:
       }
 
       return true
-    }
-  }
-
-  /**
-   * Usado internamente para realizar a formatação recursivamente nos modelos relacionados
-   *
-   * Veja documentação de nestResultWithNestTables
-   *
-   * @param correctedNestedData {Object}  Objeto que com o resultado corrigido da query
-   * @param rowData             {Object}  Resultado da query original que será processado e corrigido
-   * @param relationMappings    {Object}  RelationMap do modelo
-   * @param parentName          {String}  Nome da relação no Modelo pai seguindo padrão do nestTables ex: product:product_category
-   *
-   * @private
-   */
-  static _mapNestResultWithNestTables (correctedNestedData, rowData, relationMappings, parentName) {
-    for (const [relationMappingName, relationMap] of Object.entries(relationMappings)) {
-      const nameOriginallyDefinedByNestTables = `${parentName}${relationMappingName}`
-      const relation = rowData[nameOriginallyDefinedByNestTables]
-
-      if (relation) {
-        if (relation.id === undefined) {
-          throw new Error(`Column '${nameOriginallyDefinedByNestTables}.id' not found. It's required to specify the 'id' column in the select clause for all relationships using related join.`)
-        }
-
-        // Usado em left Join, verifica se id é null, se for null então não trouxe dados e define como null
-        correctedNestedData[relationMappingName] = relation.id === null ? null : relation
-        if (relationMap.modelClass.relationMappings) {
-          this._mapNestResultWithNestTables(correctedNestedData[relationMappingName], rowData, relationMap.modelClass.relationMappings, `${parentName}${relationMappingName}:`)
-        }
-      }
     }
   }
 
@@ -484,6 +368,7 @@ Create a base class by extending PrismaModel and define prismaClient like this:
   /// ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   getFormattedDataForDatabase () {
+    // TODO: Verificar necessidade, apenas para o caso do método nestData
     return this.constructor.flattenData(this)
   }
 
@@ -494,7 +379,7 @@ Create a base class by extending PrismaModel and define prismaClient like this:
    * @param {Options} [options] - As opções para criar a instância.
    */
   setValues (data, options = {}) {
-    options = { ...{ nestTables: false, validate: true, ignoreRequired: false, validateDeep: false }, ...options }
+    options = { ...{ validate: true, ignoreRequired: false, validateDeep: false }, ...options }
 
     if (!data) {
       throw new Error('The argument \'data\' was not provided or is null or undefined.')
@@ -508,9 +393,10 @@ Create a base class by extending PrismaModel and define prismaClient like this:
       throw new Error('Array is not allowed. To create collections use createCollection.')
     }
 
-    const nestData = options.nestTables ? this.constructor.nestResultWithNestTables(data) : this.constructor.nestData(data)
+    // TODO: Verificar nestdata é util
+    // const nestData = options.nestTables ? this.constructor.nestResultWithNestTables(data) : this.constructor.nestData(data)
 
-    for (const [attrName, value] of Object.entries(nestData)) {
+    for (const [attrName, value] of Object.entries(data)) {
       if (value === undefined) continue
       this.setValue(attrName, value, options)
     }
@@ -528,13 +414,16 @@ Create a base class by extending PrismaModel and define prismaClient like this:
    * @param {Options} [options] - As opções para criar a instância.
    */
   setValue (attrName, value, options) {
-    options = { ...{ nestTables: false, validate: true, ignoreRequired: false, validateDeep: false }, ...options }
+    options = { ...{ validate: true, ignoreRequired: false, validateDeep: false }, ...options }
 
     const Class = this.constructor
     const SubClass = Class.relations[attrName]
 
     if (isObject(value) && SubClass) {
       this._createSubModelProperty(attrName, value, options)
+    } else if (isObject(value) && Decimal.isDecimal(value)) {
+      // Disable Decimal TODO: Adicionar opção para habilitar,
+      this._createSimpleProperty(attrName, value.toNumber())
     } else {
       this._createSimpleProperty(attrName, value)
     }
