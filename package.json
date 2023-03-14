@@ -1,7 +1,7 @@
 {
   "name": "@agtm/prisma-model",
   "private": false,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Class base to be used in object-oriented model implementation",
   "main": "model.mjs",
   "scripts": {
