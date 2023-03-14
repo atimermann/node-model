@@ -1,0 +1,11 @@
+env:
+  browser: true
+  es2021: true
+extends:
+  - standard
+parserOptions:
+  ecmaVersion: 2022
+rules:
+  quotes:
+    - error
+    - single

@@ -1,0 +1,42 @@
+{
+  "name": "@agtm/prisma-model",
+  "private": false,
+  "version": "0.0.1",
+  "description": "Class base to be used in object-oriented model implementation",
+  "main": "model.mjs",
+  "scripts": {
+    "publish-patch": "npm version patch && npm publish --access public && git push",
+    "publish-minor": "npm version minor && npm publish --access public && git push",
+    "publish-major": "npm version major && npm publish --access public && git push",
+    "lint": "eslint . --ext .js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atimermann/prisma-model.git"
+  },
+  "keywords": [
+    "model",
+    "prisma",
+    "nodejs"
+  ],
+  "author": "André Timermann",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/atimermann/prisma-model/issues"
+  },
+  "homepage": "https://github.com/atimermann/prisma-model#readme",
+  "files": [
+    "model.mjs"
+  ],
+  "devDependencies": {
+    "eslint": "^8.33.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.27.5",
+    "eslint-plugin-n": "^15.6.1",
+    "eslint-plugin-promise": "^6.1.1"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21"
+  }
+}

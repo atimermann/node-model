@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model correiosTrackingOrder {
+  id       Int     @id @default(autoincrement()) @db.UnsignedInt
+  tracking String  @unique(map: "correiostrackingorder_tracking_unique") @db.VarChar(255)
+  data     String? @db.LongText
+}
+
+model inventory {
+  id           Int              @id @default(autoincrement()) @db.UnsignedInt
+  costPrice    Decimal          @db.Decimal(10, 2)
+  purchaseDate DateTime         @db.Date
+  productId    Int              @db.UnsignedInt
+  tax          Decimal?         @db.Decimal(8, 2)
+  tracking     String?          @db.VarChar(255)
+  tags         String?          @default("{}") @db.LongText
+  origin       String           @default("") @db.VarChar(255)
+  status       inventory_status @default(transit)
+  product      product          @relation(fields: [productId], references: [id], onUpdate: Restrict, map: "inventory_productId_foreign")
+
+  @@index([productId], map: "inventory_productId_foreign")
+}
+
+model product {
+  id                Int             @id @default(autoincrement()) @db.UnsignedInt
+  name              String          @unique(map: "product_product_name_unique") @db.VarChar(255)
+  productCategoryId Int             @db.UnsignedInt
+  brand             String          @default("") @db.VarChar(255)
+  inventory         inventory[]
+  productCategory   productCategory @relation(fields: [productCategoryId], references: [id], onUpdate: Restrict, map: "product_productCategoryId_foreign")
+
+  @@index([productCategoryId], map: "product_productCategoryId_foreign")
+}
+
+model productCategory {
+  id          Int       @id @default(autoincrement()) @db.UnsignedInt
+  name        String    @unique(map: "product_category_name_unique") @db.VarChar(255)
+  description String    @db.VarChar(255)
+  product     product[]
+}
+
+enum inventory_status {
+  transit
+  stock
+  installed
+  sold
+  lost
+  faulty
+  replaced
+  cancelled
+}
