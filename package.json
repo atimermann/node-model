@@ -1,7 +1,7 @@
 {
   "name": "@agtm/node-model",
   "private": false,
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Class base to be used in object-oriented model implementation",
   "main": "model.mjs",
   "scripts": {
