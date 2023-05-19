@@ -3,9 +3,9 @@
 import InventoryModel from './models/inventory.model.mjs'
 
 try {
-  const inventory = await InventoryModel.getOne(8)
+  const inventory = await InventoryModel.getAll()
 
-  console.log(inventory.costPrice + 1)
+  console.log(inventory)
 
   // console.log(await InventoryModel.deleteById(114))
   //

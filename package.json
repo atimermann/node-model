@@ -1,5 +1,5 @@
 {
-  "name": "@agtm/prisma-model",
+  "name": "@agtm/node-model",
   "private": false,
   "version": "0.0.2",
   "description": "Class base to be used in object-oriented model implementation",
@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/atimermann/prisma-model.git"
+    "url": "git+https://github.com/atimermann/node-model.git"
   },
   "keywords": [
     "model",
@@ -24,9 +24,9 @@
   "author": "André Timermann",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/atimermann/prisma-model/issues"
+    "url": "https://github.com/atimermann/node-model/issues"
   },
-  "homepage": "https://github.com/atimermann/prisma-model#readme",
+  "homepage": "https://github.com/atimermann/node-model#readme",
   "files": [
     "model.mjs"
   ],

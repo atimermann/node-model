@@ -4,8 +4,6 @@
  * src/apps/inventory/models/inventory.model.mjs
  * @author André Timermann <andre@timermann.com.br>
  *
- *   Transpofrmar no projeto node-models
- *
  *   Modelo foi criado para ser usado pela API e não pelo banco de dados, então as proprieadades devem estar pronta para
  *   consumo pela api.
  *
@@ -18,7 +16,9 @@
  *    === Transaction with Prisma  ===
  *       https://www.prisma.io/docs/guides/performance-and-optimization/prisma-client-transactions-guide#interactive-transactions
  *
- * // TODO: Criar opção para Habilitar Decimal do Prisma, quebra validação
+ * TODO: Criar opção para Habilitar Decimal do Prisma, quebra validação
+ * TODO: Error: 'inventory'.tax should be number (Esta validando NULL)
+ *
  *
  */
 
@@ -36,7 +36,7 @@ import cloneDeep from 'lodash/cloneDeep.js'
 import Ajv from 'ajv'
 import Decimal from 'decimal.js'
 
-export default class PrismaModel {
+export default class NodeModel {
   /**
    * Instancia de PrismaClient, obrigatório ser definodo pelo usuário
    * @type  {PrismaClient<Prisma.PrismaClientOptions, "log" extends keyof Prisma.PrismaClientOptions ? (Prisma.PrismaClientOptions["log"] extends Array<Prisma.LogLevel|Prisma.LogDefinition> ? Prisma.GetEvents<Prisma.PrismaClientOptions["log"]> : never) : never, "rejectOnNotFound" extends keyof Prisma.PrismaClientOptions ? Prisma.PrismaClientOptions["rejectOnNotFound"] : false>}
@@ -153,7 +153,7 @@ Create a base class by extending PrismaModel and define prismaClient like this:
    *
    * @param {object} data - Os dados para definir na instância.
    * @param {Options} [options] - As opções para criar a instância.
-   * @returns {Model} - A nova instância da classe.
+   * @returns {PrismaModel} - A nova instância da classe.
    */
   static create (data, options) {
     const instance = new this()
@@ -252,7 +252,8 @@ Create a base class by extending PrismaModel and define prismaClient like this:
     }
 
     const ajv = new Ajv({
-      allErrors: true, verbose: true
+      allErrors: true,
+      verbose: true,
       // coerceTypes: true,
       // $data: true,
       // nullable: true
@@ -267,6 +268,7 @@ Create a base class by extending PrismaModel and define prismaClient like this:
     }
 
     return (data, ignoreRequired = false) => {
+
       const valid = ignoreRequired ? this._validatorIgnoreRequiredCache(data) : this._validatorCache(data)
 
       if (!valid) {
